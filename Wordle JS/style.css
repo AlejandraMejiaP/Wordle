@@ -1,0 +1,54 @@
+body {
+    font-family: Montserrat, sans-serif;
+}
+.grid {
+    height: 400px;
+    width: 400px;
+    
+}
+.grid__fill {
+    height: 40px;
+    width: 40px;
+    
+}
+
+.grid__row{
+    background-color: rgb(166, 197, 195);
+    height: 30px;
+    width:500px;
+}
+.grid__fill {
+    background-color: rgb(166, 197, 195);
+}
+.correct {
+    background-color: rgb(12, 218, 39);
+}
+.almost {
+    background-color: rgb(230, 208, 19);  
+}
+
+.submit__button {
+    margin-top: 12px;
+    border-radius: 30px;
+    border: none;
+    background-color: rgb(166, 197, 195);
+}
+.input {
+    margin-top: 12px;
+    border-radius: 30px;
+    border: none;
+    background-color: rgb(166, 197, 195);
+}
+
+.letters { 
+    text-transform: capitalize ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
