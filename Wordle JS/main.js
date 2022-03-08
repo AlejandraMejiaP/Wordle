@@ -2,13 +2,14 @@
 
 /* Constante y variables */
 
-let secretWord = 'piano'
+let secretWord;
 let input = document.querySelector('.input')
 const submitButton = document.querySelector('.js-button')
 let counter = 0
 const grid = document.querySelector('.grid')
 const gridColor = document.querySelectorAll('.grid__fill')
-const gameOver = document.querySelector('.gameOver')
+const gameOver = document.querySelector('.gameOver');
+const messageError = document.querySelector('.exist');
 const congrats = document.querySelector(".congrats");
 const firstRow = document.querySelectorAll('.firstRow__letter')
 const secondRow = document.querySelectorAll('.secondRow__letter')
@@ -16,7 +17,8 @@ const thirdRow = document.querySelectorAll('.thirdRow__letter')
 const fourthRow = document.querySelectorAll('.fourthRow__letter')
 const fifthRow = document.querySelectorAll('.fifthRow__letter')
 const sixthRow = document.querySelectorAll('.sixthRow__letter')
-const GridSize = 6
+const GridSize = 6;
+const maxlengthWord = 5; 
 const matrixGrid = [
   firstRow,
   secondRow,
@@ -29,11 +31,44 @@ let wrongLetters = []
 let rightLetters = []
 let almostLetters = []
 let restLetters = []
-let secretWordArray = secretWord.split('')
+
+
+/* Get Word from API */ 
+
+function getWordFromApi () {
+  fetch(`https://palabras-aleatorias-public-api.herokuapp.com/random-by-length?length=${maxlengthWord}`)
+  .then((response) => response.json())
+  .then((responseApi) => { 
+    secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+  
+});
+}
+getWordFromApi ();
+/* Comprobate if user word exist */
+let exists; 
+let inputValue = "";
+function getUserWord () {
+  inputValue = input.value
+  }
+
+function comprobateUserWord () {
+  let userWord = inputValue.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();  
+  fetch(`//palabras-aleatorias-public-api.herokuapp.com/palabras-aleatorias?Word=${inputValue.toLocaleLowerCase()}`)
+  .then((response) => response.json())
+  .then((data) => { 
+    exists = (data.body.length !== 0);
+    setTimeout(compareLetters(userWord),
+    );  
+});
+} 
+
+
 
 /* compare arrays */
-function compareLetters() {
-  let userWord = input.value
+function compareLetters(userWord) {       
+if (exists) {  
+  let secretWordArray = secretWord.split('');
+  messageError.classList.add('hidden');
   let userWordArray = userWord.split('')
   rightLetters = []
   let rightLettersCounter = 0;
@@ -49,21 +84,20 @@ function compareLetters() {
         restLetters[i] = secretWordArray[i];
     }
   }
+
   let indexAlmostLetters;
-  
   for (let j = 0; j < 5; j++) {
     if (rightLetters.indexOf(j) < 0) {
       if ( (indexAlmostLetters = restLetters.indexOf(userWordArray[j])) >= 0) {
         almostLetters[almostLettersCounter] = j;
         almostLettersCounter++;
-        restLetters[j] = ""
+        // restLetters[j] = ""        
       }
     }
     
    }
-
     /* show in grid the user word */
-    if (counter < GridSize) {
+    if (counter <= 5) {
       let fill
       for (let k = 0; k < userWordArray.length;k++) {
         fill = matrixGrid[counter][k]
@@ -74,20 +108,28 @@ function compareLetters() {
         matrixGrid[counter][k].parentNode.classList.add('almost')
         }
       }
-    } else {
-      grid.classList.add('hidden')
-      gameOver.classList.toggle('hidden')
-      submitButton.setAttribute('disabled', true)
-    }
+      if (counter >= 5) {      
+        gameOver.classList.remove('hidden')
+        submitButton.setAttribute('disabled', true)
+      }
+    } 
 
     input.value = ''
-    counter++
+    
     if (rightLetters.length === secretWord.length){
         congrats.classList.toggle('hidden')
         submitButton.classList.add('hidden');
         input.classList.add('hidden')
     }
+    counter++;
   }
+   else {    
+      messageError.classList.remove('hidden');
+    }    
+
+  }
+
+  
 
 /* Abilitate button */
 function abilitateButton() {
@@ -99,9 +141,44 @@ function abilitateButton() {
 }
 abilitateButton()
 
-/* Change colors fills */
+/* modal windows */
+
+if(document.getElementById("btnModal")){
+  var modal = document.getElementById("myModal");
+  var btn = document.getElementById("btnModal");
+  var span = document.getElementsByClassName("close")[0];
+  var body = document.getElementsByTagName("body")[0];
+
+  btn.onclick = function() {
+    modal.style.display = "block";
+
+    body.style.position = "static";
+    body.style.height = "100%";
+    body.style.overflow = "hidden";
+  }
+
+  span.onclick = function() {
+    modal.style.display = "none";
+
+    body.style.position = "inherit";
+    body.style.height = "auto";
+    body.style.overflow = "visible";
+  }
+
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal.style.display = "none";
+
+      body.style.position = "inherit";
+      body.style.height = "auto";
+      body.style.overflow = "visible";
+    }
+  }
+}
+
 
 /*EVENTS */
 
-submitButton.addEventListener('click', compareLetters)
-input.addEventListener('keyup', abilitateButton)
+submitButton.addEventListener('click', comprobateUserWord);
+input.addEventListener('keyup', abilitateButton);
+input.addEventListener('keyup', getUserWord);
