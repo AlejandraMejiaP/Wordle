@@ -9,6 +9,7 @@ let counter = 0
 const grid = document.querySelector('.grid')
 const gridColor = document.querySelectorAll('.grid__fill')
 const gameOver = document.querySelector('.gameOver');
+const secretWordDisplayed = document.querySelector('.gameOver_text')
 const messageError = document.querySelector('.exist');
 const congrats = document.querySelector(".congrats");
 const firstRow = document.querySelectorAll('.firstRow__letter')
@@ -40,7 +41,7 @@ function getWordFromApi () {
   .then((response) => response.json())
   .then((responseApi) => { 
     secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-  
+  console.log(secretWord);
 });
 }
 getWordFromApi ();
@@ -108,18 +109,21 @@ if (exists) {
         matrixGrid[counter][k].parentNode.classList.add('almost')
         }
       }
-      if (counter >= 5) {      
-        gameOver.classList.remove('hidden')
-        submitButton.setAttribute('disabled', true)
+      if (counter >= 5) {    
+        secretWordDisplayed.innerHTML += secretWord;
+        secretWordDisplayed.classList.remove('hidden');
+        gameOver.classList.remove('hidden');
+        submitButton.setAttribute('disabled', true);
       }
     } 
 
     input.value = ''
     
     if (rightLetters.length === secretWord.length){
-        congrats.classList.toggle('hidden')
+        congrats.classList.toggle('hidden');
         submitButton.classList.add('hidden');
-        input.classList.add('hidden')
+        input.classList.add('hidden');
+        
     }
     counter++;
   }
