@@ -1,188 +1,175 @@
 'use strict'
 
-/* Constante y variables */
+/* Const and vars */
+
+let input = document.querySelector('.input');
+const SUBMIT_BUTTON = document.querySelector('.js-button');
+const GAME_OVER = document.querySelector('.gameOver');
+let secretWordDisplayed = document.querySelector('.gameOver_text');
+const MESSAGE_ERROR = document.querySelector('.exist');
+const congrats = document.querySelector(".congrats");
+const FIRST_ROW = document.querySelectorAll('.firstRow__letter');
+const SECOND_ROW = document.querySelectorAll('.secondRow__letter');
+const THIRD_ROW = document.querySelectorAll('.thirdRow__letter');
+const FOURT_ROW = document.querySelectorAll('.fourthRow__letter');
+const FIFTH_ROW = document.querySelectorAll('.fifthRow__letter');
+const SIXT_ROW = document.querySelectorAll('.sixthRow__letter');
 
 let secretWord;
-let input = document.querySelector('.input')
-const submitButton = document.querySelector('.js-button')
-let counter = 0
-const grid = document.querySelector('.grid')
-const gridColor = document.querySelectorAll('.grid__fill')
-const gameOver = document.querySelector('.gameOver');
-const secretWordDisplayed = document.querySelector('.gameOver_text')
-const messageError = document.querySelector('.exist');
-const congrats = document.querySelector(".congrats");
-const firstRow = document.querySelectorAll('.firstRow__letter')
-const secondRow = document.querySelectorAll('.secondRow__letter')
-const thirdRow = document.querySelectorAll('.thirdRow__letter')
-const fourthRow = document.querySelectorAll('.fourthRow__letter')
-const fifthRow = document.querySelectorAll('.fifthRow__letter')
-const sixthRow = document.querySelectorAll('.sixthRow__letter')
-const GridSize = 6;
-const maxlengthWord = 5; 
-const matrixGrid = [
-  firstRow,
-  secondRow,
-  thirdRow,
-  fourthRow,
-  fifthRow,
-  sixthRow,
-]
-let wrongLetters = []
-let rightLetters = []
-let almostLetters = []
-let restLetters = []
+const GRID_SIZE = 6;
+let roundCounter = 0;
+const MAX_LENGTH_WORD = 5; 
+const MATRIX_GRID = [
+  FIRST_ROW,
+  SECOND_ROW,
+  THIRD_ROW,
+  FOURT_ROW,
+  FIFTH_ROW,
+  SIXT_ROW,
+];
+let greyChar = [];
+let greenChar = [];
+let yellowChar = [];
+let restChar = [];
 
+getRandomWordFromApi ();
 
-/* Get Word from API */ 
-
-function getWordFromApi () {
-  fetch(`https://palabras-aleatorias-public-api.herokuapp.com/random-by-length?length=${maxlengthWord}`)
+function getRandomWordFromApi () {
+  fetch(`https://palabras-aleatorias-public-api.herokuapp.com/random-by-length?length=${MAX_LENGTH_WORD}`)
   .then((response) => response.json())
   .then((responseApi) => { 
     secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-  console.log(secretWord);
-});
+  });
 }
-getWordFromApi ();
-/* Comprobate if user word exist */
-let exists; 
-let inputValue = "";
-function getUserWord () {
-  inputValue = input.value
-  }
 
 function comprobateUserWord () {
+  let inputValue = input.value;
+  let exists; 
   let userWord = inputValue.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();  
   fetch(`//palabras-aleatorias-public-api.herokuapp.com/palabras-aleatorias?Word=${inputValue.toLocaleLowerCase()}`)
   .then((response) => response.json())
   .then((data) => { 
-    exists = (data.body.length !== 0);
-    setTimeout(compareLetters(userWord),
-    );  
-});
+    exists = (data.body.length > 0);
+    if(exists) setTimeout(compareWords(userWord, exists));
+    else MESSAGE_ERROR.classList.remove('hidden'); 
+  });
 } 
 
-
-
-/* compare arrays */
-function compareLetters(userWord) {       
-if (exists) {  
+function compareWords(userWord) {
+  // compare secret word and user word 
+  MESSAGE_ERROR.classList.add('hidden');  
   let secretWordArray = secretWord.split('');
-  messageError.classList.add('hidden');
-  let userWordArray = userWord.split('')
-  rightLetters = []
-  let rightLettersCounter = 0;
-  almostLetters = [];
-  let almostLettersCounter = 0;
+  let userWordArray = userWord.split('');  
+  greenChar = [];
+  yellowChar = [];
 
+  handleGreenChars(userWordArray, secretWordArray);
+  handleYellowChars(userWordArray); 
+  displayRow (userWordArray);
+  checkIfWin ();
+
+  roundCounter++;        
+  input.value = '';
+  abilitateButton();
+}
+
+function handleGreenChars (userWordArray, secretWordArray) {
+  let greenCharCounter = 0;
   for (let i = 0; i < userWordArray.length; i++) {
     if (userWordArray[i] === secretWordArray[i]) {
-      rightLetters[rightLettersCounter] = i
-      rightLettersCounter++;
-      restLetters[i] = "";
-    } else {
-        restLetters[i] = secretWordArray[i];
+      greenChar[greenCharCounter] = i
+      greenCharCounter++;
+      } else {
+        restChar[i] = secretWordArray[i];
     }
-  }
+  }  
+}
 
-  let indexAlmostLetters;
+function handleYellowChars(userWordArray) {
+  let indexyellowChar;
+  let yellowCharCounter = 0;
+  let greyCharCounter = 0;
   for (let j = 0; j < 5; j++) {
-    if (rightLetters.indexOf(j) < 0) {
-      if ( (indexAlmostLetters = restLetters.indexOf(userWordArray[j])) >= 0) {
-        almostLetters[almostLettersCounter] = j;
-        almostLettersCounter++;
-        // restLetters[j] = ""        
+    if (greenChar.indexOf(j) < 0) {
+      if ( (indexyellowChar = restChar.indexOf(userWordArray[j])) >= 0) {
+        yellowChar[yellowCharCounter] = j;
+        yellowCharCounter++;            
+      } else {        
+        greyChar[greyCharCounter] = userWordArray[j];
+        greyCharCounter++;
       }
-    }
-    
-   }
-    /* show in grid the user word */
-    if (counter <= 5) {
-      let fill
-      for (let k = 0; k < userWordArray.length;k++) {
-        fill = matrixGrid[counter][k]
-        fill.textContent = userWordArray[k]
-        if (rightLetters.indexOf(k) !== -1) {
-          matrixGrid[counter][k].parentNode.classList.add('correct')
-        } else if (almostLetters.indexOf(k) !== -1){
-        matrixGrid[counter][k].parentNode.classList.add('almost')
-        }
-      }
-      if (counter >= 5) {    
-        secretWordDisplayed.innerHTML += secretWord;
-        secretWordDisplayed.classList.remove('hidden');
-        gameOver.classList.remove('hidden');
-        submitButton.setAttribute('disabled', true);
-      }
-    } 
-
-    input.value = ''
-    
-    if (rightLetters.length === secretWord.length){
-        congrats.classList.toggle('hidden');
-        submitButton.classList.add('hidden');
-        input.classList.add('hidden');
-        
-    }
-    counter++;
-  }
-   else {    
-      messageError.classList.remove('hidden');
     }    
-
-  }
-
-  
-
-/* Abilitate button */
-function abilitateButton() {
-  if (input.value.length === 5) {
-    submitButton.removeAttribute('disabled')
-  } else if (input.value.length < 5) {
-    submitButton.setAttribute('disabled', true)
   }
 }
-abilitateButton()
 
-/* modal windows */
+function displayRow (userWordArray) {
+  if (roundCounter <= (GRID_SIZE-1)) {
+    let fill
+    for (let k = 0; k < userWordArray.length;k++) {
+      fill = MATRIX_GRID[roundCounter][k]
+      fill.textContent = userWordArray[k]
+      if (greenChar.indexOf(k) >=0 ) {
+        MATRIX_GRID[roundCounter][k].parentNode.classList.add('correct')
+      } else if (yellowChar.indexOf(k) >=0 ){
+      MATRIX_GRID[roundCounter][k].parentNode.classList.add('almost')
+      }
+    }
+    if (roundCounter >= (GRID_SIZE-1)) {    
+      secretWordDisplayed.innerHTML += secretWord;
+      secretWordDisplayed.classList.remove('hidden');
+      GAME_OVER.classList.remove('hidden');
+      SUBMIT_BUTTON.setAttribute('disabled', true);
+    }
+  }   
+}
 
+function checkIfWin () {
+  if (greenChar.length === secretWord.length){
+    congrats.classList.toggle('hidden');
+    SUBMIT_BUTTON.classList.add('hidden');
+    input.classList.add('hidden');}    
+}  
+
+function abilitateButton() {
+  if (input.value.length === MAX_LENGTH_WORD) {
+    SUBMIT_BUTTON.removeAttribute('disabled')
+  } else if (input.value.length < MAX_LENGTH_WORD) {
+    SUBMIT_BUTTON.setAttribute('disabled', true)
+  }
+}
+
+// modal window 
 if(document.getElementById("btnModal")){
-  var modal = document.getElementById("myModal");
-  var btn = document.getElementById("btnModal");
-  var span = document.getElementsByClassName("close")[0];
-  var body = document.getElementsByTagName("body")[0];
+  const MODAL = document.getElementById("myModal");
+  const MODAL_BTN = document.getElementById("btnModal");
+  const SPAN = document.getElementsByClassName("close")[0];
+  const BODY = document.getElementsByTagName("body")[0];
 
-  btn.onclick = function() {
-    modal.style.display = "block";
-
-    body.style.position = "static";
-    body.style.height = "100%";
-    body.style.overflow = "hidden";
+  MODAL_BTN.onclick = function() {
+    MODAL.style.display = "block";
+    BODY.style.position = "static";
+    BODY.style.height = "100%";
+    BODY.style.overflow = "hidden";
   }
 
-  span.onclick = function() {
-    modal.style.display = "none";
-
-    body.style.position = "inherit";
-    body.style.height = "auto";
-    body.style.overflow = "visible";
+  SPAN.onclick = function() {
+    MODAL.style.display = "none";
+    BODY.style.position = "inherit";
+    BODY.style.height = "auto";
+    BODY.style.overflow = "visible";
   }
 
   window.onclick = function(event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-
-      body.style.position = "inherit";
-      body.style.height = "auto";
-      body.style.overflow = "visible";
+    if (event.target == MODAL) {
+      MODAL.style.display = "none";
+      BODY.style.position = "inherit";
+      BODY.style.height = "auto";
+      BODY.style.overflow = "visible";
     }
   }
 }
 
-
 /*EVENTS */
-
-submitButton.addEventListener('click', comprobateUserWord);
+SUBMIT_BUTTON.addEventListener('click', comprobateUserWord);
 input.addEventListener('keyup', abilitateButton);
-input.addEventListener('keyup', getUserWord);
+
