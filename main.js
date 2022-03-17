@@ -7,7 +7,8 @@ const SUBMIT_BUTTON = document.querySelector('.js-button');
 const GAME_OVER = document.querySelector('.gameOver');
 let secretWordDisplayed = document.querySelector('.gameOver_text');
 const MESSAGE_ERROR = document.querySelector('.exist');
-const congrats = document.querySelector(".congrats");
+const REPLAY = document.querySelector('.reset');
+const CONGRATS = document.querySelector(".congrats");
 const FIRST_ROW = document.querySelectorAll('.firstRow__letter');
 const SECOND_ROW = document.querySelectorAll('.secondRow__letter');
 const THIRD_ROW = document.querySelectorAll('.thirdRow__letter');
@@ -16,6 +17,7 @@ const FIFTH_ROW = document.querySelectorAll('.fifthRow__letter');
 const SIXT_ROW = document.querySelectorAll('.sixthRow__letter');
 
 let secretWord;
+
 const GRID_SIZE = 6;
 let roundCounter = 0;
 const MAX_LENGTH_WORD = 5; 
@@ -39,6 +41,7 @@ function getRandomWordFromApi () {
   .then((response) => response.json())
   .then((responseApi) => { 
     secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    
   });
 }
 
@@ -113,19 +116,24 @@ function displayRow (userWordArray) {
       } else if (yellowChar.indexOf(k) >=0 ){
       MATRIX_GRID[roundCounter][k].parentNode.classList.add('almost')
       }
+      else {
+        MATRIX_GRID[roundCounter][k].parentNode.classList.add('incorrect')
+      }
     }
     if (roundCounter >= (GRID_SIZE-1)) {    
       secretWordDisplayed.innerHTML += secretWord;
       secretWordDisplayed.classList.remove('hidden');
       GAME_OVER.classList.remove('hidden');
       SUBMIT_BUTTON.setAttribute('disabled', true);
+      REPLAY.classList.remove('hidden');
     }
   }   
 }
 
 function checkIfWin () {
   if (greenChar.length === secretWord.length){
-    congrats.classList.toggle('hidden');
+    CONGRATS.classList.toggle('hidden');
+    REPLAY.classList.remove('hidden');
     SUBMIT_BUTTON.classList.add('hidden');
     input.classList.add('hidden');}    
 }  
@@ -138,8 +146,13 @@ function abilitateButton() {
   }
 }
 
+function resetGame () {
+  location.reload();  
+}
+
 // modal window 
 if(document.getElementById("btnModal")){
+  
   const MODAL = document.getElementById("myModal");
   const MODAL_BTN = document.getElementById("btnModal");
   const SPAN = document.getElementsByClassName("close")[0];
@@ -171,5 +184,11 @@ if(document.getElementById("btnModal")){
 
 /*EVENTS */
 SUBMIT_BUTTON.addEventListener('click', comprobateUserWord);
+input.addEventListener('keyup', (event)=> {
+  if(event.keyCode === 13) {
+    SUBMIT_BUTTON.click();
+  }
+});
 input.addEventListener('keyup', abilitateButton);
+REPLAY.addEventListener('click', resetGame);
 
