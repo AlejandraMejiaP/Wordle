@@ -41,7 +41,7 @@ function getRandomWordFromApi () {
   .then((response) => response.json())
   .then((responseApi) => { 
     secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-    
+    console.log(secretWord);
   });
 }
 
@@ -65,6 +65,7 @@ function compareWords(userWord) {
   let userWordArray = userWord.split('');  
   greenChar = [];
   yellowChar = [];
+  greyChar = [];
 
   handleGreenChars(userWordArray, secretWordArray);
   handleYellowChars(userWordArray); 
@@ -82,6 +83,7 @@ function handleGreenChars (userWordArray, secretWordArray) {
     if (userWordArray[i] === secretWordArray[i]) {
       greenChar[greenCharCounter] = i
       greenCharCounter++;
+      restChar[i] = "";
       } else {
         restChar[i] = secretWordArray[i];
     }
@@ -92,11 +94,12 @@ function handleYellowChars(userWordArray) {
   let indexyellowChar;
   let yellowCharCounter = 0;
   let greyCharCounter = 0;
-  for (let j = 0; j < 5; j++) {
+  for (let j = 0; j < userWordArray.length; j++) {
     if (greenChar.indexOf(j) < 0) {
       if ( (indexyellowChar = restChar.indexOf(userWordArray[j])) >= 0) {
         yellowChar[yellowCharCounter] = j;
-        yellowCharCounter++;            
+        yellowCharCounter++;
+        restChar[indexyellowChar] = "";
       } else {        
         greyChar[greyCharCounter] = userWordArray[j];
         greyCharCounter++;
@@ -106,6 +109,18 @@ function handleYellowChars(userWordArray) {
 }
 
 function displayRow (userWordArray) {
+  //TEMPORAL
+  console.log("YELLOWS: ");
+  for(let i = 0; i < yellowChar.length; i++){
+    console.log(yellowChar[i]);
+
+  }
+  console.log("Grey: ");
+  for(let i = 0; i < greyChar.length; i++){
+    console.log(greyChar[i]);
+
+  }
+  //FIN TEMPORAL
   if (roundCounter <= (GRID_SIZE-1)) {
     let fill
     for (let k = 0; k < userWordArray.length;k++) {
