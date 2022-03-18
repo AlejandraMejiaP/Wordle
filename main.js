@@ -41,7 +41,7 @@ function getRandomWordFromApi () {
   .then((response) => response.json())
   .then((responseApi) => { 
     secretWord = responseApi.body.Word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-    console.log(secretWord);
+   
   });
 }
 
@@ -108,18 +108,11 @@ function handleYellowChars(userWordArray) {
   }
 }
 
-function displayRow (userWordArray) {
-  //TEMPORAL
-  console.log("YELLOWS: ");
+function displayRow (userWordArray) { 
   for(let i = 0; i < yellowChar.length; i++){
-    console.log(yellowChar[i]);
-
   }
-  console.log("Grey: ");
   for(let i = 0; i < greyChar.length; i++){
-    console.log(greyChar[i]);
-
-  }
+   }
   //FIN TEMPORAL
   if (roundCounter <= (GRID_SIZE-1)) {
     let fill
